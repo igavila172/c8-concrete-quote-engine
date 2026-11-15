@@ -48,6 +48,26 @@
                                 <option value="8">8" (Industrial)</option>
                             </select>
                         </div>
+
+                        <div>
+                            <label class="block text-xs font-bold text-gray-500 uppercase mb-1">Concrete Mix Strength (PSI)</label>
+                            <select id="mixGradePsi" name="mixGradePsi" class="w-full border rounded-lg p-2 focus:ring-2 focus:ring-orange-500 outline-none">
+                                <option value="2500">2,500 PSI (Standard)</option>
+                                <option value="3000" selected>3,000 PSI (Standard Residential)</option>
+                                <option value="4000">4,000 PSI (Heavy Duty)</option>
+                                <option value="5000">5,000 PSI (Commercial Grade)</option>
+                            </select>
+                        </div>
+
+                        <div>
+                            <label class="block text-xs font-bold text-gray-500 uppercase mb-1">Surface Finish</label>
+                            <select id="surfaceFinish" name="surfaceFinish" class="w-full border rounded-lg p-2 focus:ring-2 focus:ring-orange-500 outline-none">
+                                <option value="BROOM" selected>Broom Finish (Standard)</option>
+                                <option value="SALT_SWIRL">Salt Swirl</option>
+                                <option value="EXPOSED_AGGREGATE">Exposed Aggregate</option>
+                                <option value="STAMPED">Stamped Concrete</option>
+                            </select>
+                        </div>
                         
                         <div class="pt-4">
                             <label class="block text-xs font-bold text-gray-500 uppercase mb-2">Job Site Photo (Optional Preview)</label>
@@ -79,7 +99,28 @@
                         <i class="fa-solid fa-truck-ramp-box text-6xl"></i>
                     </div>
                     <h2 class="text-xs font-bold uppercase text-gray-400 mb-1">Total Estimated Cash Price</h2>
-                    <div class="text-4xl font-black" id="totalCost">$0.00</div>
+                    <div class="text-4xl font-black mb-4" id="totalCost">$0.00</div>
+
+                    <!-- Breakdown Surcharges -->
+                    <div class="border-t border-gray-800 pt-3 space-y-2 text-sm text-gray-300">
+                        <div class="flex justify-between">
+                            <span>Concrete Subtotal:</span>
+                            <span id="concreteSubtotal" class="font-bold text-white">$0.00</span>
+                        </div>
+                        <div class="flex justify-between">
+                            <span>Mix Grade Surcharge:</span>
+                            <span id="resMixSurcharge" class="font-bold text-white">$0.00</span>
+                        </div>
+                        <div class="flex justify-between">
+                            <span>Surface Finish Surcharge:</span>
+                            <span id="resFinishSurcharge" class="font-bold text-white">$0.00</span>
+                        </div>
+                        <div id="shortLoadRow" class="flex justify-between hidden">
+                            <span>Short-Load Fee (&lt;4 yd&sup3;):</span>
+                            <span id="resShortLoadFee" class="font-bold text-orange-400">$0.00</span>
+                        </div>
+                    </div>
+
                     <div class="mt-4 flex gap-4 text-xs">
                         <div class="bg-gray-800 px-2 py-1 rounded">Volume: <span id="billedYards">0.00</span> yd³</div>
                         <div id="shortLoadBadge" class="hidden bg-orange-900 text-orange-200 px-2 py-1 rounded font-bold">Includes Short-Load Fee</div>
@@ -145,7 +186,9 @@
                 lengthFeet: parseFloat(formData.get('lengthFeet')),
                 widthFeet: parseFloat(formData.get('widthFeet')),
                 thicknessInches: parseFloat(formData.get('thicknessInches')),
-                customWasteFactor: 0.10 // Default
+                customWasteFactor: 0.10, // Default
+                mixGradePsi: parseInt(formData.get('mixGradePsi')),
+                surfaceFinish: formData.get('surfaceFinish')
             };
 
             try {
@@ -167,13 +210,21 @@
         function displayResults(quote) {
             results.classList.remove('hidden');
             document.getElementById('totalCost').textContent = `$${quote.totalCost.toLocaleString(undefined, {minimumFractionDigits: 2})}`;
+            document.getElementById('concreteSubtotal').textContent = `$${quote.concreteSubtotal.toLocaleString(undefined, {minimumFractionDigits: 2})}`;
+            document.getElementById('resMixSurcharge').textContent = `$${quote.mixGradeSurcharge.toLocaleString(undefined, {minimumFractionDigits: 2})}`;
+            document.getElementById('resFinishSurcharge').textContent = `$${quote.surfaceFinishSurcharge.toLocaleString(undefined, {minimumFractionDigits: 2})}`;
             document.getElementById('billedYards').textContent = quote.billedYards;
             
             const shortLoadBadge = document.getElementById('shortLoadBadge');
+            const shortLoadRow = document.getElementById('shortLoadRow');
+            const resShortLoadFee = document.getElementById('resShortLoadFee');
             if (quote.shortLoadFee > 0) {
                 shortLoadBadge.classList.remove('hidden');
+                shortLoadRow.classList.remove('hidden');
+                resShortLoadFee.textContent = `$${quote.shortLoadFee.toLocaleString(undefined, {minimumFractionDigits: 2})}`;
             } else {
                 shortLoadBadge.classList.add('hidden');
+                shortLoadRow.classList.add('hidden');
             }
 
             const financingList = document.getElementById('financingList');
