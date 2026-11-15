@@ -21,6 +21,7 @@ jobs:
         run: |
           mkdir -p ~/.gemini
           printf '{"%s": "TRUST_FOLDER"}\n' "$GITHUB_WORKSPACE" > ~/.gemini/trustedFolders.json
+          printf '{"model": {"name": "gemini-2.5-flash"}}\n' > ~/.gemini/settings.json
 
       - name: Run R&D Strategist Agent
         uses: google-github-actions/run-gemini-cli@v0
@@ -30,6 +31,7 @@ jobs:
             Inspect this C-8 Concrete Quote Engine repository. First run `gh issue list --label ai-build --state open`. If an open issue already exists, stop and do nothing. Otherwise, propose ONE high-impact C-8 concrete contracting feature, pricing edge case, or lead-capture upgrade and create a GitHub Issue using `gh issue create --label ai-build --title "..." --body "..."`.
         env:
           GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
+          GEMINI_MODEL: gemini-2.5-flash
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
   code-builder:
@@ -50,6 +52,7 @@ jobs:
         run: |
           mkdir -p ~/.gemini
           printf '{"%s": "TRUST_FOLDER"}\n' "$GITHUB_WORKSPACE" > ~/.gemini/trustedFolders.json
+          printf '{"model": {"name": "gemini-2.5-flash"}}\n' > ~/.gemini/settings.json
 
       - name: Run Code Builder Agent
         uses: google-github-actions/run-gemini-cli@v0
@@ -59,4 +62,5 @@ jobs:
             Check open issues labeled `ai-build` via `gh issue list --label ai-build --state open --json number,title,body`. If none exist, exit cleanly. Otherwise pick the newest issue, create a new git branch (`git checkout -b feat/issue-<number>`), implement the feature following GEMINI.md (BigDecimal money/volume math, JUnit 5 tests), run `./mvnw test` until green, commit and push the branch, and open a Pull Request via `gh pr create --fill` referencing `Closes #<number>`.
         env:
           GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
+          GEMINI_MODEL: gemini-2.5-flash
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}

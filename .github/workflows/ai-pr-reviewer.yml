@@ -21,6 +21,7 @@ jobs:
         run: |
           mkdir -p ~/.gemini
           printf '{"%s": "TRUST_FOLDER"}\n' "$GITHUB_WORKSPACE" > ~/.gemini/trustedFolders.json
+          printf '{"model": {"name": "gemini-2.5-flash"}}\n' > ~/.gemini/settings.json
 
       - name: Run QA Auditor Agent
         uses: google-github-actions/run-gemini-cli@v0
@@ -30,4 +31,5 @@ jobs:
             Review Pull Request #${{ github.event.pull_request.number }}. Run `gh pr diff ${{ github.event.pull_request.number }}` and audit the changes against GEMINI.md for BigDecimal financial/yardage accuracy, security, and JUnit 5 test coverage. Post a clear review summary comment using `gh pr comment ${{ github.event.pull_request.number }} --body "..."`.
         env:
           GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
+          GEMINI_MODEL: gemini-2.5-flash
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
