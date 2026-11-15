@@ -18,7 +18,9 @@ jobs:
           fetch-depth: 0
 
       - name: Trust workspace for Gemini CLI
-        run: mkdir -p ~/.gemini && echo "{\"$GITHUB_WORKSPACE\": \"TRUST_FOLDER\"}" > ~/.gemini/trustedFolders.json
+        run: |
+          mkdir -p ~/.gemini
+          printf '{"%s": "TRUST_FOLDER"}\n' "$GITHUB_WORKSPACE" > ~/.gemini/trustedFolders.json
 
       - name: Run QA Auditor Agent
         uses: google-github-actions/run-gemini-cli@v0

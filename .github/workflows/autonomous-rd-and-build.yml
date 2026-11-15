@@ -18,7 +18,9 @@ jobs:
         uses: actions/checkout@v4
 
       - name: Trust workspace for Gemini CLI
-        run: mkdir -p ~/.gemini && echo "{\"$GITHUB_WORKSPACE\": \"TRUST_FOLDER\"}" > ~/.gemini/trustedFolders.json
+        run: |
+          mkdir -p ~/.gemini
+          printf '{"%s": "TRUST_FOLDER"}\n' "$GITHUB_WORKSPACE" > ~/.gemini/trustedFolders.json
 
       - name: Run R&D Strategist Agent
         uses: google-github-actions/run-gemini-cli@v0
@@ -45,7 +47,9 @@ jobs:
           cache: 'maven'
 
       - name: Trust workspace for Gemini CLI
-        run: mkdir -p ~/.gemini && echo "{\"$GITHUB_WORKSPACE\": \"TRUST_FOLDER\"}" > ~/.gemini/trustedFolders.json
+        run: |
+          mkdir -p ~/.gemini
+          printf '{"%s": "TRUST_FOLDER"}\n' "$GITHUB_WORKSPACE" > ~/.gemini/trustedFolders.json
 
       - name: Run Code Builder Agent
         uses: google-github-actions/run-gemini-cli@v0
