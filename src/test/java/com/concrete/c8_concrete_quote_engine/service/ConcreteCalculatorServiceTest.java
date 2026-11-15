@@ -150,4 +150,46 @@ class ConcreteCalculatorServiceTest {
         assertThat(response.surfaceFinish()).isEqualTo("STAMPED");
         assertThat(response.surfaceFinishSurcharge()).isEqualByComparingTo("350.00"); // 100 * 3.50
     }
+
+    @Test
+    void calculateQuote_ReinforcementRebar3_AppliesSurcharge() {
+        // 10ft x 10ft = 100 sq ft
+        // #3 Rebar -> +$1.25 / sq ft = $125.00 surcharge
+        QuoteRequest request = new QuoteRequest(
+            new BigDecimal("10.0"),
+            new BigDecimal("10.0"),
+            new BigDecimal("4.0"),
+            null,
+            2500,
+            "BROOM",
+            "REBAR_3",
+            false
+        );
+
+        QuoteResponse response = service.calculateQuote(request);
+
+        assertThat(response.reinforcementType()).isEqualTo("REBAR_3");
+        assertThat(response.reinforcementSurcharge()).isEqualByComparingTo("125.00"); // 100 * 1.25
+    }
+
+    @Test
+    void calculateQuote_VaporBarrier_AppliesSurcharge() {
+        // 10ft x 10ft = 100 sq ft
+        // Vapor Barrier -> +$0.45 / sq ft = $45.00 surcharge
+        QuoteRequest request = new QuoteRequest(
+            new BigDecimal("10.0"),
+            new BigDecimal("10.0"),
+            new BigDecimal("4.0"),
+            null,
+            2500,
+            "BROOM",
+            "NONE",
+            true
+        );
+
+        QuoteResponse response = service.calculateQuote(request);
+
+        assertThat(response.vaporBarrier()).isTrue();
+        assertThat(response.vaporBarrierSurcharge()).isEqualByComparingTo("45.00"); // 100 * 0.45
+    }
 }

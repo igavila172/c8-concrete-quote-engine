@@ -13,6 +13,12 @@ pricing:
     SALT_SWIRL: 0.50
     STAMPED: 3.50
     EXPOSED_AGGREGATE: 2.00
+  reinforcements:
+    NONE: 0.00
+    REBAR_3: 1.25
+    REBAR_4: 1.75
+    WWF: 0.85
+  vapor-barrier-price-per-sq-ft: 0.45
   loan-options:
     - term-months: 12
       annual-rate: 0.00

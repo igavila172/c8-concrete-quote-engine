@@ -61,16 +61,34 @@ public class ConcreteCalculatorService {
         BigDecimal surfaceFinishSurcharge = areaSqFt.multiply(finishPricePerSqFt)
                 .setScale(2, RoundingMode.HALF_UP);
 
-        // 6. Short-Load Fee
+        // 6. Reinforcement Surcharge Calculation
+        String reinforcementType = request.reinforcementType() != null && !request.reinforcementType().isBlank()
+                ? request.reinforcementType().toUpperCase()
+                : "NONE";
+        BigDecimal reinforcementPricePerSqFt = pricing.getReinforcements().getOrDefault(reinforcementType, BigDecimal.ZERO);
+        BigDecimal reinforcementSurcharge = areaSqFt.multiply(reinforcementPricePerSqFt)
+                .setScale(2, RoundingMode.HALF_UP);
+
+        // 7. Vapor Barrier Surcharge Calculation
+        boolean vaporBarrier = Boolean.TRUE.equals(request.vaporBarrier());
+        BigDecimal vaporBarrierSurcharge = vaporBarrier
+                ? areaSqFt.multiply(pricing.getVaporBarrierPricePerSqFt()).setScale(2, RoundingMode.HALF_UP)
+                : BigDecimal.ZERO.setScale(2, RoundingMode.HALF_UP);
+
+        // 8. Short-Load Fee
         BigDecimal shortLoadFee = billedYards.compareTo(pricing.getShortLoadThreshold()) < 0
                 ? pricing.getShortLoadFee()
                 : BigDecimal.ZERO;
         shortLoadFee = shortLoadFee.setScale(2, RoundingMode.HALF_UP);
 
-        // 7. Total Cost
-        BigDecimal totalCost = concreteSubtotal.add(surfaceFinishSurcharge).add(shortLoadFee);
+        // 9. Total Cost
+        BigDecimal totalCost = concreteSubtotal
+                .add(surfaceFinishSurcharge)
+                .add(reinforcementSurcharge)
+                .add(vaporBarrierSurcharge)
+                .add(shortLoadFee);
 
-        // 8. Financing Options
+        // 10. Financing Options
         List<LoanPaymentOption> financingOptions = pricing.getLoanOptions().stream()
                 .map(option -> calculateLoanOption(totalCost, option.termMonths(), option.annualRate()))
                 .collect(Collectors.toList());
@@ -83,6 +101,10 @@ public class ConcreteCalculatorService {
             mixGradeSurcharge,
             surfaceFinish,
             surfaceFinishSurcharge,
+            reinforcementType,
+            reinforcementSurcharge,
+            vaporBarrier,
+            vaporBarrierSurcharge,
             concreteSubtotal,
             shortLoadFee,
             totalCost,

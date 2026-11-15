@@ -11,6 +11,10 @@ public record QuoteResponse(
     BigDecimal mixGradeSurcharge,
     String surfaceFinish,
     BigDecimal surfaceFinishSurcharge,
+    String reinforcementType,
+    BigDecimal reinforcementSurcharge,
+    Boolean vaporBarrier,
+    BigDecimal vaporBarrierSurcharge,
     BigDecimal concreteSubtotal,
     BigDecimal shortLoadFee,
     BigDecimal totalCost,
@@ -25,6 +29,6 @@ public record QuoteResponse(
         BigDecimal totalCost,
         List<LoanPaymentOption> financingOptions
     ) {
-        this(rawCubicYards, yardsWithWaste, billedYards, 2500, BigDecimal.ZERO, "BROOM", BigDecimal.ZERO, concreteSubtotal, shortLoadFee, totalCost, financingOptions);
+        this(rawCubicYards, yardsWithWaste, billedYards, 2500, BigDecimal.ZERO, "BROOM", BigDecimal.ZERO, "NONE", BigDecimal.ZERO, false, BigDecimal.ZERO, concreteSubtotal, shortLoadFee, totalCost, financingOptions);
     }
 }
