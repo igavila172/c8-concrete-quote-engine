@@ -97,7 +97,6 @@ class ConcreteCalculatorServiceTest {
             new BigDecimal("4.0"),
             null
         );
-        // Force total cost to $1200 for easier math (via mocked pricing if needed, but we'll just check the response)
         QuoteResponse response = service.calculateQuote(request);
         
         // Check 12 month 0% option
@@ -108,5 +107,47 @@ class ConcreteCalculatorServiceTest {
         BigDecimal expectedMonthly = response.totalCost().divide(new BigDecimal("12"), 2, java.math.RoundingMode.HALF_UP);
         assertThat(zeroPercentOption.monthlyPayment()).isEqualByComparingTo(expectedMonthly);
         assertThat(zeroPercentOption.totalInterest()).isEqualByComparingTo(BigDecimal.ZERO);
+    }
+
+    @Test
+    void calculateQuote_MixGrade3000Psi_AppliesSurcharge() {
+        // 20ft x 20ft x 4in = 133.33 cu ft = 4.938 cu yd
+        // With 10% waste: 5.432 cu yd -> Rounded UP to 5.50 cu yd
+        // 3000 PSI -> +$15.00/yd surcharge
+        // Effective price = 175 + 15 = 190
+        // Concrete subtotal = 5.50 * 190 = 1045.00
+        QuoteRequest request = new QuoteRequest(
+            new BigDecimal("20.0"),
+            new BigDecimal("20.0"),
+            new BigDecimal("4.0"),
+            null,
+            3000,
+            "BROOM"
+        );
+
+        QuoteResponse response = service.calculateQuote(request);
+
+        assertThat(response.mixGradePsi()).isEqualTo(3000);
+        assertThat(response.mixGradeSurcharge()).isEqualByComparingTo("82.50"); // 5.5 * 15
+        assertThat(response.concreteSubtotal()).isEqualByComparingTo("1045.00");
+    }
+
+    @Test
+    void calculateQuote_SurfaceFinishStamped_AppliesSurcharge() {
+        // 10ft x 10ft = 100 sq ft
+        // Stamped Concrete -> +$3.50 / sq ft = $350.00 surcharge
+        QuoteRequest request = new QuoteRequest(
+            new BigDecimal("10.0"),
+            new BigDecimal("10.0"),
+            new BigDecimal("4.0"),
+            null,
+            2500,
+            "STAMPED"
+        );
+
+        QuoteResponse response = service.calculateQuote(request);
+
+        assertThat(response.surfaceFinish()).isEqualTo("STAMPED");
+        assertThat(response.surfaceFinishSurcharge()).isEqualByComparingTo("350.00"); // 100 * 3.50
     }
 }

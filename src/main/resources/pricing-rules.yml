@@ -3,6 +3,16 @@ pricing:
   short-load-fee: 150.00
   short-load-threshold: 4.00
   default-waste-factor: 0.10
+  mix-grades:
+    2500: 0.00
+    3000: 15.00
+    4000: 30.00
+    5000: 50.00
+  surface-finishes:
+    BROOM: 0.00
+    SALT_SWIRL: 0.50
+    STAMPED: 3.50
+    EXPOSED_AGGREGATE: 2.00
   loan-options:
     - term-months: 12
       annual-rate: 0.00

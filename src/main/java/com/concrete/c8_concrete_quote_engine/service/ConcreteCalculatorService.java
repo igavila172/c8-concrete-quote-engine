@@ -42,18 +42,35 @@ public class ConcreteCalculatorService {
         BigDecimal billedYards = yardsWithWaste.divide(QUARTER_YARD, 0, RoundingMode.CEILING)
                 .multiply(QUARTER_YARD);
 
-        // 4. Calculate Costs
-        BigDecimal concreteSubtotal = billedYards.multiply(pricing.getConcretePricePerYard())
-                .setScale(2, RoundingMode.HALF_UP);
+        // 4. Mix Grade & Price Calculation
+        int mixGradePsi = request.mixGradePsi() != null ? request.mixGradePsi() : 2500;
+        BigDecimal gradeSurchargePerYard = pricing.getMixGrades().getOrDefault(mixGradePsi, BigDecimal.ZERO);
+        BigDecimal effectivePricePerYard = pricing.getConcretePricePerYard().add(gradeSurchargePerYard);
         
+        BigDecimal concreteSubtotal = billedYards.multiply(effectivePricePerYard)
+                .setScale(2, RoundingMode.HALF_UP);
+        BigDecimal mixGradeSurcharge = billedYards.multiply(gradeSurchargePerYard)
+                .setScale(2, RoundingMode.HALF_UP);
+
+        // 5. Surface Finish Surcharge Calculation
+        BigDecimal areaSqFt = request.lengthFeet().multiply(request.widthFeet());
+        String surfaceFinish = request.surfaceFinish() != null && !request.surfaceFinish().isBlank() 
+                ? request.surfaceFinish().toUpperCase() 
+                : "BROOM";
+        BigDecimal finishPricePerSqFt = pricing.getSurfaceFinishes().getOrDefault(surfaceFinish, BigDecimal.ZERO);
+        BigDecimal surfaceFinishSurcharge = areaSqFt.multiply(finishPricePerSqFt)
+                .setScale(2, RoundingMode.HALF_UP);
+
+        // 6. Short-Load Fee
         BigDecimal shortLoadFee = billedYards.compareTo(pricing.getShortLoadThreshold()) < 0
                 ? pricing.getShortLoadFee()
                 : BigDecimal.ZERO;
         shortLoadFee = shortLoadFee.setScale(2, RoundingMode.HALF_UP);
 
-        BigDecimal totalCost = concreteSubtotal.add(shortLoadFee);
+        // 7. Total Cost
+        BigDecimal totalCost = concreteSubtotal.add(surfaceFinishSurcharge).add(shortLoadFee);
 
-        // 5. Financing Options
+        // 8. Financing Options
         List<LoanPaymentOption> financingOptions = pricing.getLoanOptions().stream()
                 .map(option -> calculateLoanOption(totalCost, option.termMonths(), option.annualRate()))
                 .collect(Collectors.toList());
@@ -62,6 +79,10 @@ public class ConcreteCalculatorService {
             rawCubicYards.setScale(4, RoundingMode.HALF_UP),
             yardsWithWaste.setScale(4, RoundingMode.HALF_UP),
             billedYards.setScale(2, RoundingMode.HALF_UP),
+            mixGradePsi,
+            mixGradeSurcharge,
+            surfaceFinish,
+            surfaceFinishSurcharge,
             concreteSubtotal,
             shortLoadFee,
             totalCost,

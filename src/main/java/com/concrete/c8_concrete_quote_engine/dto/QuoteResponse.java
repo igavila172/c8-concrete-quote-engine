@@ -7,8 +7,24 @@ public record QuoteResponse(
     BigDecimal rawCubicYards,
     BigDecimal yardsWithWaste,
     BigDecimal billedYards,
+    Integer mixGradePsi,
+    BigDecimal mixGradeSurcharge,
+    String surfaceFinish,
+    BigDecimal surfaceFinishSurcharge,
     BigDecimal concreteSubtotal,
     BigDecimal shortLoadFee,
     BigDecimal totalCost,
     List<LoanPaymentOption> financingOptions
-) {}
+) {
+    public QuoteResponse(
+        BigDecimal rawCubicYards,
+        BigDecimal yardsWithWaste,
+        BigDecimal billedYards,
+        BigDecimal concreteSubtotal,
+        BigDecimal shortLoadFee,
+        BigDecimal totalCost,
+        List<LoanPaymentOption> financingOptions
+    ) {
+        this(rawCubicYards, yardsWithWaste, billedYards, 2500, BigDecimal.ZERO, "BROOM", BigDecimal.ZERO, concreteSubtotal, shortLoadFee, totalCost, financingOptions);
+    }
+}
