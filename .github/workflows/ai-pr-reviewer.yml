@@ -17,19 +17,22 @@ jobs:
         with:
           fetch-depth: 0
 
-      - name: Trust workspace for Gemini CLI
-        run: |
-          mkdir -p ~/.gemini
-          printf '{"%s": "TRUST_FOLDER"}\n' "$GITHUB_WORKSPACE" > ~/.gemini/trustedFolders.json
-          printf '{"model": {"name": "gemini-3.8-flash-lite"}}\n' > ~/.gemini/settings.json
-
-      - name: Run QA Auditor Agent
-        uses: google-github-actions/run-gemini-cli@v0
-        with:
-          gemini_api_key: ${{ secrets.GEMINI_API_KEY }}
-          prompt: |
-            Review Pull Request #${{ github.event.pull_request.number }}. Run `gh pr diff ${{ github.event.pull_request.number }}` and audit the changes against GEMINI.md for BigDecimal financial/yardage accuracy, security, and JUnit 5 test coverage. Post a clear review summary comment using `gh pr comment ${{ github.event.pull_request.number }} --body "..."`.
+      - name: Run QA Auditor with Dynamic Model Cycling
         env:
           GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
-          GEMINI_MODEL: gemini-3.8-flash-lite
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          npm install -g @google/gemini-cli
+          mkdir -p ~/.gemini
+          printf '{"%s": "TRUST_FOLDER"}\n' "$GITHUB_WORKSPACE" > ~/.gemini/trustedFolders.json
+          MODELS=$(curl -s "https://googleapis.com" | python3 -c "import sys, json; data = json.load(sys.stdin); print(' '.join(m['name'].replace('models/', '') for m in data.get('models', []) if 'generateContent' in m.get('supportedGenerationMethods', []) and 'gemini' in m['name'] and 'image' not in m['name'] and 'tts' not in m['name']))")
+          PROMPT="Review Pull Request #${{ github.event.pull_request.number }}. Run 'gh pr diff ${{ github.event.pull_request.number }}' and audit the changes against GEMINI.md for BigDecimal financial/yardage accuracy, security, and JUnit 5 test coverage. Post a clear review summary comment using 'gh pr comment ${{ github.event.pull_request.number }} --body "..."'."
+          for MODEL in gemini-3.5-flash-lite gemini-3.8-flash $MODELS; do
+            echo "Trying model: $MODEL"
+            if gemini --yolo --model "$MODEL" -p "$PROMPT"; then
+              echo "Succeeded with $MODEL"
+              exit 0
+            fi
+            echo "Model $MODEL failed or out of quota, trying next..."
+          done
+          exit 1
