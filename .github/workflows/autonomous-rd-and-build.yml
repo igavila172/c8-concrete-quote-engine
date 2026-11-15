@@ -17,7 +17,7 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v4
 
-      - name: Run R&D Strategist with Dynamic Model Cycling
+      - name: Run R&D Strategist with Model Cycling
         env:
           GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
@@ -25,18 +25,7 @@ jobs:
           npm install -g @google/gemini-cli
           mkdir -p ~/.gemini
           printf '{"%s": "TRUST_FOLDER"}\n' "$GITHUB_WORKSPACE" > ~/.gemini/trustedFolders.json
-          MODELS=$(curl -s "https://googleapis.com" | python3 -c "import sys, json; data = json.load(sys.stdin); print(' '.join(m['name'].replace('models/', '') for m in data.get('models', []) if 'generateContent' in m.get('supportedGenerationMethods', []) and 'gemini' in m['name'] and 'image' not in m['name'] and 'tts' not in m['name']))")
-          echo "Discovered models: $MODELS"
-          PROMPT='Inspect this C-8 Concrete Quote Engine repository. First run `gh issue list --label ai-build --state open`. If an open issue already exists, stop and do nothing. Otherwise, propose ONE high-impact C-8 concrete contracting feature, pricing edge case, or lead-capture upgrade and create a GitHub Issue using `gh issue create --label ai-build --title "..." --body "..."`.'
-          for MODEL in gemini-3.5-flash-lite gemini-3.8-flash $MODELS; do
-            echo "Trying model: $MODEL"
-            if gemini --yolo --model "$MODEL" -p "$PROMPT"; then
-              echo "Succeeded with $MODEL"
-              exit 0
-            fi
-            echo "Model $MODEL failed or out of quota, trying next..."
-          done
-          exit 1
+          python3 .github/scripts/run_gemini_with_fallback.py 'Inspect this C-8 Concrete Quote Engine repository. First run `gh issue list --label ai-build --state open`. If an open issue already exists, stop and do nothing. Otherwise, propose ONE high-impact C-8 concrete contracting feature, pricing edge case, or lead-capture upgrade and create a GitHub Issue using `gh issue create --label ai-build --title "..." --body "..."`.'
 
   code-builder:
     needs: rd-strategist
@@ -52,7 +41,7 @@ jobs:
           distribution: 'temurin'
           cache: 'maven'
 
-      - name: Run Code Builder with Dynamic Model Cycling
+      - name: Run Code Builder with Model Cycling
         env:
           GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
@@ -60,14 +49,4 @@ jobs:
           npm install -g @google/gemini-cli
           mkdir -p ~/.gemini
           printf '{"%s": "TRUST_FOLDER"}\n' "$GITHUB_WORKSPACE" > ~/.gemini/trustedFolders.json
-          MODELS=$(curl -s "https://googleapis.com" | python3 -c "import sys, json; data = json.load(sys.stdin); print(' '.join(m['name'].replace('models/', '') for m in data.get('models', []) if 'generateContent' in m.get('supportedGenerationMethods', []) and 'gemini' in m['name'] and 'image' not in m['name'] and 'tts' not in m['name']))")
-          PROMPT='Check open issues labeled `ai-build` via `gh issue list --label ai-build --state open --json number,title,body`. If none exist, exit cleanly. Otherwise pick the newest issue, create a new git branch (`git checkout -b feat/issue-<number>`), implement the feature following GEMINI.md (BigDecimal money/volume math, JUnit 5 tests), run `./mvnw test` until green, commit and push the branch, and open a Pull Request via `gh pr create --fill` referencing `Closes #<number>`.'
-          for MODEL in gemini-3.5-flash-lite gemini-3.8-flash $MODELS; do
-            echo "Trying model: $MODEL"
-            if gemini --yolo --model "$MODEL" -p "$PROMPT"; then
-              echo "Succeeded with $MODEL"
-              exit 0
-            fi
-            echo "Model $MODEL failed or out of quota, trying next..."
-          done
-          exit 1
+          python3 .github/scripts/run_gemini_with_fallback.py 'Check open issues labeled `ai-build` via `gh issue list --label ai-build --state open --json number,title,body`. If none exist, exit cleanly. Otherwise pick the newest issue, create a new git branch (`git checkout -b feat/issue-<number>`), implement the feature following GEMINI.md (BigDecimal money/volume math, JUnit 5 tests), run `./mvnw test` until green, commit and push the branch, and open a Pull Request via `gh pr create --fill` referencing `Closes #<number>`.'
