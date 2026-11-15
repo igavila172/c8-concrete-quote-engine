@@ -1,0 +1,12 @@
+pricing:
+  concrete-price-per-yard: 175.00
+  short-load-fee: 150.00
+  short-load-threshold: 4.00
+  default-waste-factor: 0.10
+  loan-options:
+    - term-months: 12
+      annual-rate: 0.00
+    - term-months: 36
+      annual-rate: 0.059
+    - term-months: 60
+      annual-rate: 0.079

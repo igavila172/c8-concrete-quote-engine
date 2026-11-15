@@ -1,0 +1,167 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>C-8 Mission Control</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <style>
+        body { background-color: #050505; color: #00ff41; font-family: 'Courier New', Courier, monospace; }
+        .neon-border { border: 1px solid #00ff41; box-shadow: 0 0 10px #00ff41; }
+        .neon-text { text-shadow: 0 0 5px #00ff41; }
+        .neon-bg { background: rgba(0, 255, 65, 0.05); }
+        .agent-card { transition: all 0.3s ease; }
+        .agent-thinking { animation: pulse 1.5s infinite; border-color: #ff00ff; box-shadow: 0 0 20px #ff00ff; color: #ff00ff; }
+        @keyframes pulse { 0% { opacity: 1; } 50% { opacity: 0.5; } 100% { opacity: 1; } }
+        .matrix-scroll::-webkit-scrollbar { width: 5px; }
+        .matrix-scroll::-webkit-scrollbar-track { background: #000; }
+        .matrix-scroll::-webkit-scrollbar-thumb { background: #00ff41; }
+    </style>
+</head>
+<body class="p-4 md:p-8 min-h-screen">
+
+    <!-- Top Command Bar -->
+    <header class="max-w-6xl mx-auto mb-8">
+        <div class="flex justify-between items-center mb-6">
+            <h1 class="text-2xl font-bold neon-text"><i class="fa-solid fa-microchip mr-2"></i>C-8 MISSION CONTROL</h1>
+            <a href="/index.html" class="text-xs neon-border px-4 py-2 hover:bg-[#00ff41] hover:text-black transition-colors uppercase font-bold">
+                <i class="fa-solid fa-calculator mr-2"></i>Quote Engine
+            </a>
+        </div>
+        
+        <div class="neon-border p-4 neon-bg flex gap-4">
+            <input type="text" id="missionInput" placeholder="ENTER MASTER GOAL (e.g. Optimize stamped patio pricing)..." 
+                   class="flex-1 bg-black border-none outline-none text-sm placeholder-gray-700">
+            <button id="deployBtn" class="bg-[#00ff41] text-black font-black px-6 py-2 uppercase hover:bg-white transition-colors">
+                Deploy Swarm
+            </button>
+        </div>
+    </header>
+
+    <main class="max-w-6xl mx-auto grid grid-cols-1 lg:grid-cols-4 gap-6">
+        
+        <!-- Agent Cards -->
+        <div id="RD_STRATEGIST" class="agent-card neon-border p-6 neon-bg">
+            <div class="flex justify-between items-start mb-4">
+                <i class="fa-solid fa-brain text-xl"></i>
+                <span class="status-badge text-[10px] border px-2 py-0.5 uppercase">Idle</span>
+            </div>
+            <h3 class="font-bold text-sm mb-2 uppercase">R&D Strategist</h3>
+            <p class="text-[10px] opacity-60 leading-tight">Market research & lead capture strategy.</p>
+        </div>
+
+        <div id="BACKEND_ARCHITECT" class="agent-card neon-border p-6 neon-bg">
+            <div class="flex justify-between items-start mb-4">
+                <i class="fa-solid fa-server text-xl"></i>
+                <span class="status-badge text-[10px] border px-2 py-0.5 uppercase">Idle</span>
+            </div>
+            <h3 class="font-bold text-sm mb-2 uppercase">Backend Architect</h3>
+            <p class="text-[10px] opacity-60 leading-tight">Pricing logic & system architecture.</p>
+        </div>
+
+        <div id="FRONTEND_DESIGNER" class="agent-card neon-border p-6 neon-bg">
+            <div class="flex justify-between items-start mb-4">
+                <i class="fa-solid fa-palette text-xl"></i>
+                <span class="status-badge text-[10px] border px-2 py-0.5 uppercase">Idle</span>
+            </div>
+            <h3 class="font-bold text-sm mb-2 uppercase">Frontend Designer</h3>
+            <p class="text-[10px] opacity-60 leading-tight">UI/UX & conversion optimization.</p>
+        </div>
+
+        <div id="QA_AUDITOR" class="agent-card neon-border p-6 neon-bg">
+            <div class="flex justify-between items-start mb-4">
+                <i class="fa-solid fa-vial-circle-check text-xl"></i>
+                <span class="status-badge text-[10px] border px-2 py-0.5 uppercase">Idle</span>
+            </div>
+            <h3 class="font-bold text-sm mb-2 uppercase">QA Auditor</h3>
+            <p class="text-[10px] opacity-60 leading-tight">Math validation & edge-case testing.</p>
+        </div>
+
+        <!-- Matrix Terminal -->
+        <div class="lg:col-span-4 neon-border mt-6 h-96 bg-black relative overflow-hidden flex flex-col">
+            <div class="bg-[#00ff41] text-black text-[10px] font-bold px-2 py-1 uppercase flex justify-between">
+                <span>Real-Time Neural Feed</span>
+                <span id="activeGoal">No Mission Active</span>
+            </div>
+            <div id="terminal" class="p-4 overflow-y-auto flex-1 text-xs space-y-2 matrix-scroll">
+                <div class="opacity-50">> System initialized. Waiting for command...</div>
+            </div>
+            <div class="absolute bottom-0 left-0 w-full h-1/2 bg-gradient-to-t from-[#00ff4111] to-transparent pointer-events-none"></div>
+        </div>
+
+    </main>
+
+    <script>
+        const terminal = document.getElementById('terminal');
+        const missionInput = document.getElementById('missionInput');
+        const deployBtn = document.getElementById('deployBtn');
+        const activeGoalSpan = document.getElementById('activeGoal');
+
+        function appendLog(message, type = 'system', agent = null) {
+            const entry = document.createElement('div');
+            const time = new Date().toLocaleTimeString();
+            let content = `<span class="opacity-30">[${time}]</span> `;
+            
+            if (agent) {
+                content += `<span class="font-bold text-white uppercase">[${agent}]</span> `;
+            }
+
+            content += message;
+            
+            if (type === 'handoff') entry.style.color = '#ff00ff';
+            if (type === 'error') entry.style.color = '#ff4141';
+            
+            entry.innerHTML = content;
+            terminal.appendChild(entry);
+            terminal.scrollTop = terminal.scrollHeight;
+        }
+
+        function updateAgent(type, state, message) {
+            if (!type) return;
+            const card = document.getElementById(type);
+            const badge = card.querySelector('.status-badge');
+            
+            card.className = 'agent-card neon-border p-6 neon-bg';
+            badge.textContent = state;
+
+            if (state === 'THINKING') {
+                card.classList.add('agent-thinking');
+            } else if (state === 'DONE') {
+                card.style.borderColor = '#ffffff';
+                card.style.boxShadow = '0 0 10px #ffffff';
+            } else if (state === 'HANDOFF') {
+                card.style.borderColor = '#ff00ff';
+                card.style.boxShadow = '0 0 10px #ff00ff';
+            }
+        }
+
+        // Initialize SSE
+        const eventSource = new EventSource('/api/agents/stream');
+        eventSource.onmessage = (event) => {
+            const update = JSON.parse(event.data);
+            appendLog(update.message, update.state.toLowerCase(), update.agentType);
+            updateAgent(update.agentType, update.state, update.message);
+        };
+
+        deployBtn.addEventListener('click', async () => {
+            const goal = missionInput.value.trim();
+            if (!goal) return;
+
+            activeGoalSpan.textContent = `MISSION: ${goal}`;
+            terminal.innerHTML = '';
+            appendLog(`Dispatching swarm for mission: ${goal}...`, 'system');
+
+            try {
+                await fetch('/api/agents/dispatch', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ goal })
+                });
+            } catch (err) {
+                appendLog('Critical error in dispatch.', 'error');
+            }
+        });
+    </script>
+</body>
+</html>

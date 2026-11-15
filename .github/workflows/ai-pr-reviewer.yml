@@ -1,0 +1,32 @@
+name: AI PR Reviewer
+
+on:
+  pull_request:
+    types: [opened, synchronize]
+
+permissions:
+  contents: read
+  pull-requests: write
+
+jobs:
+  qa-auditor:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Run QA Auditor via Gemini CLI
+        uses: google-github-actions/run-gemini-cli@v0
+        with:
+          gemini-api-key: ${{ secrets.GEMINI_API_KEY }}
+          prompt: |
+            You are the QA Auditor agent for the C-8 Concrete Quote Engine.
+            Audit the current Pull Request diff for:
+            1. Strict adherence to BigDecimal money math (no double/float).
+            2. Compliance with C-8 rules (10% waste, 0.25 yd rounding, short-load fee under 4 yds).
+            3. Security vulnerabilities or missing input validations.
+            4. Adequate JUnit 5 test coverage.
+            Post your professional code review comment directly on the PR using GitHub CLI (`gh pr comment`).
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          PR_NUMBER: ${{ github.event.pull_request.number }}

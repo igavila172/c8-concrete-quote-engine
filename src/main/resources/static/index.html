@@ -1,0 +1,197 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>C-8 Concrete Quote Engine</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <style>
+        .safety-orange { color: #FF6B00; }
+        .bg-safety-orange { background-color: #FF6B00; }
+        .border-safety-orange { border-color: #FF6B00; }
+    </style>
+</head>
+<body class="bg-gray-100 font-sans text-gray-900">
+
+    <nav class="bg-white shadow-md p-4">
+        <div class="max-w-4xl mx-auto flex justify-between items-center">
+            <h1 class="text-xl font-bold tracking-tight"><i class="fa-solid fa-helmet-safety safety-orange mr-2"></i>C-8 <span class="font-light">Concrete Quote</span></h1>
+            <span class="text-xs font-bold uppercase bg-gray-200 px-2 py-1 rounded">California Licensed</span>
+        </div>
+    </nav>
+
+    <main class="max-w-4xl mx-auto p-4 md:p-8">
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+            
+            <!-- Left Column: Input Form -->
+            <section class="space-y-6">
+                <div class="bg-white rounded-xl shadow-sm p-6 border border-gray-200">
+                    <h2 class="text-lg font-semibold mb-4 border-b pb-2">Project Dimensions</h2>
+                    <form id="quoteForm" class="space-y-4">
+                        <div class="grid grid-cols-2 gap-4">
+                            <div>
+                                <label class="block text-xs font-bold text-gray-500 uppercase mb-1">Length (Feet)</label>
+                                <input type="number" step="0.1" name="lengthFeet" value="20" required class="w-full border rounded-lg p-2 focus:ring-2 focus:ring-orange-500 outline-none">
+                            </div>
+                            <div>
+                                <label class="block text-xs font-bold text-gray-500 uppercase mb-1">Width (Feet)</label>
+                                <input type="number" step="0.1" name="widthFeet" value="10" required class="w-full border rounded-lg p-2 focus:ring-2 focus:ring-orange-500 outline-none">
+                            </div>
+                        </div>
+                        <div>
+                            <label class="block text-xs font-bold text-gray-500 uppercase mb-1">Thickness (Inches)</label>
+                            <select name="thicknessInches" class="w-full border rounded-lg p-2 focus:ring-2 focus:ring-orange-500 outline-none">
+                                <option value="4">4" (Standard Driveway/Patio)</option>
+                                <option value="6">6" (Heavy Duty/Commercial)</option>
+                                <option value="3.5">3.5" (Walkways)</option>
+                                <option value="8">8" (Industrial)</option>
+                            </select>
+                        </div>
+                        
+                        <div class="pt-4">
+                            <label class="block text-xs font-bold text-gray-500 uppercase mb-2">Job Site Photo (Optional Preview)</label>
+                            <div class="relative group">
+                                <input type="file" id="photoInput" accept="image/*" class="hidden">
+                                <label for="photoInput" class="flex flex-col items-center justify-center border-2 border-dashed border-gray-300 rounded-xl p-4 cursor-pointer hover:border-safety-orange transition-colors">
+                                    <i class="fa-solid fa-camera text-2xl text-gray-400 group-hover:text-safety-orange mb-2"></i>
+                                    <span class="text-sm text-gray-500">Upload Site Photo</span>
+                                </label>
+                                <div id="photoPreview" class="hidden mt-4">
+                                    <img src="" alt="Preview" class="rounded-lg w-full h-48 object-cover shadow-sm">
+                                    <button type="button" id="removePhoto" class="mt-2 text-xs text-red-500 font-bold uppercase"><i class="fa-solid fa-trash mr-1"></i> Remove</button>
+                                </div>
+                            </div>
+                        </div>
+
+                        <button type="submit" class="w-full bg-safety-orange text-white font-bold py-3 rounded-lg shadow-lg hover:bg-orange-600 transition-transform active:scale-95 mt-6">
+                            Calculate My Quote
+                        </button>
+                    </form>
+                </div>
+            </section>
+
+            <!-- Right Column: Results -->
+            <section id="results" class="hidden space-y-6">
+                <!-- Total Cost Card -->
+                <div class="bg-gray-900 text-white rounded-xl shadow-xl p-6 relative overflow-hidden">
+                    <div class="absolute top-0 right-0 p-4 opacity-10">
+                        <i class="fa-solid fa-truck-ramp-box text-6xl"></i>
+                    </div>
+                    <h2 class="text-xs font-bold uppercase text-gray-400 mb-1">Total Estimated Cash Price</h2>
+                    <div class="text-4xl font-black" id="totalCost">$0.00</div>
+                    <div class="mt-4 flex gap-4 text-xs">
+                        <div class="bg-gray-800 px-2 py-1 rounded">Volume: <span id="billedYards">0.00</span> yd³</div>
+                        <div id="shortLoadBadge" class="hidden bg-orange-900 text-orange-200 px-2 py-1 rounded font-bold">Includes Short-Load Fee</div>
+                    </div>
+                </div>
+
+                <!-- Financing Options -->
+                <div class="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
+                    <div class="bg-gray-50 p-4 border-b">
+                        <h3 class="font-bold text-sm uppercase tracking-wider text-gray-600">Financing Options</h3>
+                    </div>
+                    <div id="financingList" class="divide-y">
+                        <!-- Options injected here -->
+                    </div>
+                    <div class="p-4 bg-gray-50">
+                        <p class="text-[10px] text-gray-400 leading-tight italic">
+                            * Payments are estimates. Subject to credit approval. APR varies by term. C-8 license #1234567.
+                        </p>
+                    </div>
+                </div>
+
+                <button class="w-full border-2 border-safety-orange text-safety-orange font-bold py-3 rounded-lg hover:bg-safety-orange hover:text-white transition-colors">
+                    Schedule On-Site Verification
+                </button>
+            </section>
+
+        </div>
+    </main>
+
+    <script>
+        const form = document.getElementById('quoteForm');
+        const results = document.getElementById('results');
+        const photoInput = document.getElementById('photoInput');
+        const photoPreview = document.getElementById('photoPreview');
+        const previewImg = photoPreview.querySelector('img');
+        const removePhoto = document.getElementById('removePhoto');
+
+        // Photo Preview Logic
+        photoInput.addEventListener('change', (e) => {
+            const file = e.target.files[0];
+            if (file) {
+                const reader = new FileReader();
+                reader.onload = (re) => {
+                    previewImg.src = re.target.result;
+                    photoPreview.classList.remove('hidden');
+                    photoInput.parentElement.querySelector('label').classList.add('hidden');
+                }
+                reader.readAsDataURL(file);
+            }
+        });
+
+        removePhoto.addEventListener('click', () => {
+            photoInput.value = '';
+            photoPreview.classList.add('hidden');
+            photoInput.parentElement.querySelector('label').classList.remove('hidden');
+        });
+
+        // Form Submission Logic
+        form.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const formData = new FormData(form);
+            const data = {
+                lengthFeet: parseFloat(formData.get('lengthFeet')),
+                widthFeet: parseFloat(formData.get('widthFeet')),
+                thicknessInches: parseFloat(formData.get('thicknessInches')),
+                customWasteFactor: 0.10 // Default
+            };
+
+            try {
+                const response = await fetch('/api/quotes', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(data)
+                });
+
+                if (!response.ok) throw new Error('Calculation failed');
+
+                const quote = await response.json();
+                displayResults(quote);
+            } catch (err) {
+                alert('Error connecting to engine. Please ensure backend is running.');
+            }
+        });
+
+        function displayResults(quote) {
+            results.classList.remove('hidden');
+            document.getElementById('totalCost').textContent = `$${quote.totalCost.toLocaleString(undefined, {minimumFractionDigits: 2})}`;
+            document.getElementById('billedYards').textContent = quote.billedYards;
+            
+            const shortLoadBadge = document.getElementById('shortLoadBadge');
+            if (quote.shortLoadFee > 0) {
+                shortLoadBadge.classList.remove('hidden');
+            } else {
+                shortLoadBadge.classList.add('hidden');
+            }
+
+            const financingList = document.getElementById('financingList');
+            financingList.innerHTML = quote.financingOptions.map(opt => `
+                <div class="p-4 flex justify-between items-center hover:bg-gray-50 transition-colors cursor-pointer group">
+                    <div>
+                        <div class="text-sm font-bold text-gray-800">${opt.termMonths} Months</div>
+                        <div class="text-[10px] text-gray-500">${(opt.annualRate * 100).toFixed(1)}% APR • $${opt.totalInterest.toLocaleString()} total interest</div>
+                    </div>
+                    <div class="text-right">
+                        <div class="text-lg font-black text-safety-orange">$${opt.monthlyPayment.toFixed(2)}<span class="text-xs font-normal text-gray-400">/mo</span></div>
+                        <div class="text-[10px] uppercase font-bold text-gray-400 group-hover:text-safety-orange">Select Plan <i class="fa-solid fa-chevron-right ml-1"></i></div>
+                    </div>
+                </div>
+            `).join('');
+            
+            results.scrollIntoView({ behavior: 'smooth' });
+        }
+    </script>
+</body>
+</html>

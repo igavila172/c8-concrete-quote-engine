@@ -1,0 +1,56 @@
+name: Autonomous R&D and Build
+
+on:
+  schedule:
+    - cron: '0 15 * * *' # 8:00 AM PT daily
+  workflow_dispatch:
+
+permissions:
+  contents: write
+  issues: write
+  pull-requests: write
+
+jobs:
+  rd-strategist:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Run R&D Strategist via Gemini CLI
+        uses: google-github-actions/run-gemini-cli@v0
+        with:
+          gemini-api-key: ${{ secrets.GEMINI_API_KEY }}
+          prompt: |
+            You are the R&D Strategist agent for the C-8 Concrete Quote Engine.
+            Inspect the repository and determine ONE high-impact C-8 concrete feature, lead-capture upgrade, or pricing edge case to implement next.
+            Check if an open GitHub issue labeled "ai-build" already exists. If one exists, skip opening a new issue.
+            Otherwise, create a new GitHub issue titled "AI Build: [Feature Name]" with a clear specification following GEMINI.md guidelines.
+            Use GitHub CLI (gh issue create) if appropriate, or output the exact instruction.
+
+  code-builder:
+    needs: rd-strategist
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Java 21
+        uses: actions/setup-java@v4
+        with:
+          distribution: 'temurin'
+          java-version: '21'
+
+      - name: Run Code Builder via Gemini CLI
+        uses: google-github-actions/run-gemini-cli@v0
+        with:
+          gemini-api-key: ${{ secrets.GEMINI_API_KEY }}
+          prompt: |
+            You are the Backend/Frontend Code Builder agent.
+            Find the newest open GitHub issue labeled "ai-build".
+            Implement the requested changes in Java/Spring Boot or HTML/Tailwind, following GEMINI.md rules (strict BigDecimal math, 10% waste, 0.25 yd rounding, short-load fees).
+            Add corresponding JUnit 5 tests.
+            Run `./mvnw test` to verify.
+            If tests pass, commit the changes, push to a new branch, and open a Pull Request linked to the issue using GitHub CLI (`gh pr create`).
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
