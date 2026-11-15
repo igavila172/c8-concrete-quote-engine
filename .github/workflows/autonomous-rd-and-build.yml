@@ -50,3 +50,11 @@ jobs:
           mkdir -p ~/.gemini
           printf '{"%s": "TRUST_FOLDER"}\n' "$GITHUB_WORKSPACE" > ~/.gemini/trustedFolders.json
           python3 .github/scripts/run_gemini_with_fallback.py 'Check open issues labeled `ai-build` via `gh issue list --label ai-build --state open --json number,title,body`. If none exist, exit cleanly. Otherwise pick the newest issue, create a new git branch (`git checkout -b feat/issue-<number>`), implement the feature following GEMINI.md (BigDecimal money/volume math, JUnit 5 tests), run `./mvnw test` until green, commit and push the branch, and open a Pull Request via `gh pr create --fill` referencing `Closes #<number>`.'
+          BRANCH=$(git branch --show-current)
+          if [ "$BRANCH" != "main" ] && [ -n "$BRANCH" ]; then
+            git add -A
+            git diff --cached --quiet || git commit -m "feat: implement $BRANCH"
+            git push -u origin "$BRANCH"
+            ISSUE_NUM=${BRANCH#feat/issue-}
+            gh pr list --head "$BRANCH" --json number | grep -q '"number"' || gh pr create --fill --body "Closes #$ISSUE_NUM"
+          fi
