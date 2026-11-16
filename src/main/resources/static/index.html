@@ -68,6 +68,21 @@
                                 <option value="STAMPED">Stamped Concrete</option>
                             </select>
                         </div>
+
+                        <div>
+                            <label class="block text-xs font-bold text-gray-500 uppercase mb-1">Reinforcement Type (CBC Compliance)</label>
+                            <select id="reinforcementType" name="reinforcementType" class="w-full border rounded-lg p-2 focus:ring-2 focus:ring-orange-500 outline-none">
+                                <option value="NONE" selected>Unreinforced (Standard)</option>
+                                <option value="REBAR_3">#3 Rebar Grid (12" o.c.) [+$1.25/sq ft]</option>
+                                <option value="REBAR_4">#4 Rebar Grid (12" o.c.) [+$1.75/sq ft]</option>
+                                <option value="WWF">Welded Wire Fabric (WWF) [+$0.85/sq ft]</option>
+                            </select>
+                        </div>
+
+                        <div class="flex items-center space-x-3 pt-2">
+                            <input type="checkbox" id="vaporBarrier" name="vaporBarrier" class="w-4 h-4 text-orange-600 border-gray-300 rounded focus:ring-orange-500">
+                            <label for="vaporBarrier" class="text-xs font-bold text-gray-700 uppercase">15-mil ASTM E1745 Class A Vapor Barrier [+$0.45/sq ft]</label>
+                        </div>
                         
                         <div class="pt-4">
                             <label class="block text-xs font-bold text-gray-500 uppercase mb-2">Job Site Photo (Optional Preview)</label>
@@ -114,6 +129,14 @@
                         <div class="flex justify-between">
                             <span>Surface Finish Surcharge:</span>
                             <span id="resFinishSurcharge" class="font-bold text-white">$0.00</span>
+                        </div>
+                        <div class="flex justify-between">
+                            <span>Reinforcement Surcharge:</span>
+                            <span id="resReinforcementSurcharge" class="font-bold text-white">$0.00</span>
+                        </div>
+                        <div class="flex justify-between">
+                            <span>Vapor Barrier Surcharge:</span>
+                            <span id="resVaporBarrierSurcharge" class="font-bold text-white">$0.00</span>
                         </div>
                         <div id="shortLoadRow" class="flex justify-between hidden">
                             <span>Short-Load Fee (&lt;4 yd&sup3;):</span>
@@ -188,7 +211,9 @@
                 thicknessInches: parseFloat(formData.get('thicknessInches')),
                 customWasteFactor: 0.10, // Default
                 mixGradePsi: parseInt(formData.get('mixGradePsi')),
-                surfaceFinish: formData.get('surfaceFinish')
+                surfaceFinish: formData.get('surfaceFinish'),
+                reinforcementType: formData.get('reinforcementType'),
+                vaporBarrier: document.getElementById('vaporBarrier').checked
             };
 
             try {
@@ -213,6 +238,8 @@
             document.getElementById('concreteSubtotal').textContent = `$${quote.concreteSubtotal.toLocaleString(undefined, {minimumFractionDigits: 2})}`;
             document.getElementById('resMixSurcharge').textContent = `$${quote.mixGradeSurcharge.toLocaleString(undefined, {minimumFractionDigits: 2})}`;
             document.getElementById('resFinishSurcharge').textContent = `$${quote.surfaceFinishSurcharge.toLocaleString(undefined, {minimumFractionDigits: 2})}`;
+            document.getElementById('resReinforcementSurcharge').textContent = `$${quote.reinforcementSurcharge.toLocaleString(undefined, {minimumFractionDigits: 2})}`;
+            document.getElementById('resVaporBarrierSurcharge').textContent = `$${quote.vaporBarrierSurcharge.toLocaleString(undefined, {minimumFractionDigits: 2})}`;
             document.getElementById('billedYards').textContent = quote.billedYards;
             
             const shortLoadBadge = document.getElementById('shortLoadBadge');

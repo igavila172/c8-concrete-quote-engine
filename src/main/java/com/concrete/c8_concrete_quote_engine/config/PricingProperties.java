@@ -17,6 +17,8 @@ public class PricingProperties {
     private BigDecimal defaultWasteFactor;
     private Map<Integer, BigDecimal> mixGrades;
     private Map<String, BigDecimal> surfaceFinishes;
+    private Map<String, BigDecimal> reinforcements;
+    private BigDecimal vaporBarrierPricePerSqFt;
     private List<LoanOption> loanOptions;
 
     public static record LoanOption(int termMonths, BigDecimal annualRate) {}
@@ -56,6 +58,24 @@ public class PricingProperties {
         return surfaceFinishes;
     }
     public void setSurfaceFinishes(Map<String, BigDecimal> surfaceFinishes) { this.surfaceFinishes = surfaceFinishes; }
+
+    public Map<String, BigDecimal> getReinforcements() {
+        if (reinforcements == null) {
+            return Map.of(
+                "NONE", BigDecimal.ZERO,
+                "REBAR_3", new BigDecimal("1.25"),
+                "REBAR_4", new BigDecimal("1.75"),
+                "WWF", new BigDecimal("0.85")
+            );
+        }
+        return reinforcements;
+    }
+    public void setReinforcements(Map<String, BigDecimal> reinforcements) { this.reinforcements = reinforcements; }
+
+    public BigDecimal getVaporBarrierPricePerSqFt() {
+        return vaporBarrierPricePerSqFt != null ? vaporBarrierPricePerSqFt : new BigDecimal("0.45");
+    }
+    public void setVaporBarrierPricePerSqFt(BigDecimal vaporBarrierPricePerSqFt) { this.vaporBarrierPricePerSqFt = vaporBarrierPricePerSqFt; }
 
     public List<LoanOption> getLoanOptions() { return loanOptions; }
     public void setLoanOptions(List<LoanOption> loanOptions) { this.loanOptions = loanOptions; }
