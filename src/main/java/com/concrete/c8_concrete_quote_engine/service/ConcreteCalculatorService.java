@@ -75,20 +75,44 @@ public class ConcreteCalculatorService {
                 ? areaSqFt.multiply(pricing.getVaporBarrierPricePerSqFt()).setScale(2, RoundingMode.HALF_UP)
                 : BigDecimal.ZERO.setScale(2, RoundingMode.HALF_UP);
 
-        // 8. Short-Load Fee
+        // 8. Pumping Surcharge Calculation
+        String pumpingMethod = request.pumpingMethod() != null && !request.pumpingMethod().isBlank()
+                ? request.pumpingMethod().toUpperCase()
+                : "NONE";
+        PricingProperties.PumpingMethodConfig pumpConfig = pricing.getPumpingMethods().getOrDefault(
+                pumpingMethod,
+                new PricingProperties.PumpingMethodConfig(BigDecimal.ZERO, BigDecimal.ZERO)
+        );
+        BigDecimal pumpingSurcharge = pumpConfig.getBaseFee()
+                .add(billedYards.multiply(pumpConfig.getPerYardFee()))
+                .setScale(2, RoundingMode.HALF_UP);
+
+        // 9. Long-Distance Haul Surcharge Calculation
+        Integer haulDistanceFeet = request.haulDistanceFeet();
+        BigDecimal haulSurcharge;
+        if (haulDistanceFeet != null && haulDistanceFeet > pricing.getLongDistanceHaulThresholdFeet()) {
+            haulSurcharge = areaSqFt.multiply(pricing.getLongDistanceHaulFeePerSqFt())
+                    .setScale(2, RoundingMode.HALF_UP);
+        } else {
+            haulSurcharge = BigDecimal.ZERO.setScale(2, RoundingMode.HALF_UP);
+        }
+
+        // 10. Short-Load Fee
         BigDecimal shortLoadFee = billedYards.compareTo(pricing.getShortLoadThreshold()) < 0
                 ? pricing.getShortLoadFee()
                 : BigDecimal.ZERO;
         shortLoadFee = shortLoadFee.setScale(2, RoundingMode.HALF_UP);
 
-        // 9. Total Cost
+        // 11. Total Cost
         BigDecimal totalCost = concreteSubtotal
                 .add(surfaceFinishSurcharge)
                 .add(reinforcementSurcharge)
                 .add(vaporBarrierSurcharge)
+                .add(pumpingSurcharge)
+                .add(haulSurcharge)
                 .add(shortLoadFee);
 
-        // 10. Financing Options
+        // 12. Financing Options
         List<LoanPaymentOption> financingOptions = pricing.getLoanOptions().stream()
                 .map(option -> calculateLoanOption(totalCost, option.termMonths(), option.annualRate()))
                 .collect(Collectors.toList());
@@ -105,6 +129,10 @@ public class ConcreteCalculatorService {
             reinforcementSurcharge,
             vaporBarrier,
             vaporBarrierSurcharge,
+            pumpingMethod,
+            pumpingSurcharge,
+            haulDistanceFeet,
+            haulSurcharge,
             concreteSubtotal,
             shortLoadFee,
             totalCost,
