@@ -12,13 +12,19 @@ public record QuoteRequest(
     Integer mixGradePsi,
     String surfaceFinish,
     String reinforcementType,
-    Boolean vaporBarrier
+    Boolean vaporBarrier,
+    String pumpingMethod,
+    Integer haulDistanceFeet
 ) {
     public QuoteRequest(BigDecimal lengthFeet, BigDecimal widthFeet, BigDecimal thicknessInches, BigDecimal customWasteFactor) {
-        this(lengthFeet, widthFeet, thicknessInches, customWasteFactor, null, null, null, null);
+        this(lengthFeet, widthFeet, thicknessInches, customWasteFactor, null, null, null, null, null, null);
     }
 
     public QuoteRequest(BigDecimal lengthFeet, BigDecimal widthFeet, BigDecimal thicknessInches, BigDecimal customWasteFactor, Integer mixGradePsi, String surfaceFinish) {
-        this(lengthFeet, widthFeet, thicknessInches, customWasteFactor, mixGradePsi, surfaceFinish, null, null);
+        this(lengthFeet, widthFeet, thicknessInches, customWasteFactor, mixGradePsi, surfaceFinish, null, null, null, null);
+    }
+
+    public QuoteRequest(BigDecimal lengthFeet, BigDecimal widthFeet, BigDecimal thicknessInches, BigDecimal customWasteFactor, Integer mixGradePsi, String surfaceFinish, String reinforcementType, Boolean vaporBarrier) {
+        this(lengthFeet, widthFeet, thicknessInches, customWasteFactor, mixGradePsi, surfaceFinish, reinforcementType, vaporBarrier, null, null);
     }
 }

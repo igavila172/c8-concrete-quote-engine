@@ -192,4 +192,74 @@ class ConcreteCalculatorServiceTest {
         assertThat(response.vaporBarrier()).isTrue();
         assertThat(response.vaporBarrierSurcharge()).isEqualByComparingTo("45.00"); // 100 * 0.45
     }
+
+    @Test
+    void calculateQuote_LinePump_AppliesSurcharge() {
+        // 10ft x 10ft x 4in = 1.50 billed yds
+        // Line Pump: $350.00 base + $15.00/yd * 1.50 = $350.00 + $22.50 = $372.50
+        QuoteRequest request = new QuoteRequest(
+            new BigDecimal("10.0"),
+            new BigDecimal("10.0"),
+            new BigDecimal("4.0"),
+            null,
+            2500,
+            "BROOM",
+            "NONE",
+            false,
+            "LINE_PUMP",
+            null
+        );
+
+        QuoteResponse response = service.calculateQuote(request);
+
+        assertThat(response.pumpingMethod()).isEqualTo("LINE_PUMP");
+        assertThat(response.pumpingSurcharge()).isEqualByComparingTo("372.50");
+    }
+
+    @Test
+    void calculateQuote_BoomPump_AppliesSurcharge() {
+        // 10ft x 10ft x 4in = 1.50 billed yds
+        // Boom Pump: $650.00 base + $25.00/yd * 1.50 = $650.00 + $37.50 = $687.50
+        QuoteRequest request = new QuoteRequest(
+            new BigDecimal("10.0"),
+            new BigDecimal("10.0"),
+            new BigDecimal("4.0"),
+            null,
+            2500,
+            "BROOM",
+            "NONE",
+            false,
+            "BOOM_PUMP",
+            50
+        );
+
+        QuoteResponse response = service.calculateQuote(request);
+
+        assertThat(response.pumpingMethod()).isEqualTo("BOOM_PUMP");
+        assertThat(response.pumpingSurcharge()).isEqualByComparingTo("687.50");
+        assertThat(response.haulSurcharge()).isEqualByComparingTo("0.00"); // 50 ft <= 100 ft threshold
+    }
+
+    @Test
+    void calculateQuote_LongDistanceHaul_AppliesSurcharge() {
+        // 10ft x 10ft = 100 sq ft, haul distance 120 ft (> 100 ft threshold)
+        // Haul surcharge: 100 sq ft * $0.25 = $25.00
+        QuoteRequest request = new QuoteRequest(
+            new BigDecimal("10.0"),
+            new BigDecimal("10.0"),
+            new BigDecimal("4.0"),
+            null,
+            2500,
+            "BROOM",
+            "NONE",
+            false,
+            "NONE",
+            120
+        );
+
+        QuoteResponse response = service.calculateQuote(request);
+
+        assertThat(response.haulDistanceFeet()).isEqualTo(120);
+        assertThat(response.haulSurcharge()).isEqualByComparingTo("25.00");
+    }
 }

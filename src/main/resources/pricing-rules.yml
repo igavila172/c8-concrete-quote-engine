@@ -19,6 +19,18 @@ pricing:
     REBAR_4: 1.75
     WWF: 0.85
   vapor-barrier-price-per-sq-ft: 0.45
+  pumping-methods:
+    NONE:
+      base-fee: 0.00
+      per-yard-fee: 0.00
+    LINE_PUMP:
+      base-fee: 350.00
+      per-yard-fee: 15.00
+    BOOM_PUMP:
+      base-fee: 650.00
+      per-yard-fee: 25.00
+  long-distance-haul-threshold-feet: 100
+  long-distance-haul-fee-per-sq-ft: 0.25
   loan-options:
     - term-months: 12
       annual-rate: 0.00

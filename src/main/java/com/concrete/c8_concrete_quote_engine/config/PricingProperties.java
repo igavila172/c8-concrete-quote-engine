@@ -19,7 +19,26 @@ public class PricingProperties {
     private Map<String, BigDecimal> surfaceFinishes;
     private Map<String, BigDecimal> reinforcements;
     private BigDecimal vaporBarrierPricePerSqFt;
+    private Map<String, PumpingMethodConfig> pumpingMethods;
+    private Integer longDistanceHaulThresholdFeet;
+    private BigDecimal longDistanceHaulFeePerSqFt;
     private List<LoanOption> loanOptions;
+
+    public static class PumpingMethodConfig {
+        private BigDecimal baseFee = BigDecimal.ZERO;
+        private BigDecimal perYardFee = BigDecimal.ZERO;
+
+        public PumpingMethodConfig() {}
+        public PumpingMethodConfig(BigDecimal baseFee, BigDecimal perYardFee) {
+            this.baseFee = baseFee;
+            this.perYardFee = perYardFee;
+        }
+
+        public BigDecimal getBaseFee() { return baseFee; }
+        public void setBaseFee(BigDecimal baseFee) { this.baseFee = baseFee; }
+        public BigDecimal getPerYardFee() { return perYardFee; }
+        public void setPerYardFee(BigDecimal perYardFee) { this.perYardFee = perYardFee; }
+    }
 
     public static record LoanOption(int termMonths, BigDecimal annualRate) {}
 
@@ -76,6 +95,28 @@ public class PricingProperties {
         return vaporBarrierPricePerSqFt != null ? vaporBarrierPricePerSqFt : new BigDecimal("0.45");
     }
     public void setVaporBarrierPricePerSqFt(BigDecimal vaporBarrierPricePerSqFt) { this.vaporBarrierPricePerSqFt = vaporBarrierPricePerSqFt; }
+
+    public Map<String, PumpingMethodConfig> getPumpingMethods() {
+        if (pumpingMethods == null) {
+            return Map.of(
+                "NONE", new PumpingMethodConfig(BigDecimal.ZERO, BigDecimal.ZERO),
+                "LINE_PUMP", new PumpingMethodConfig(new BigDecimal("350.00"), new BigDecimal("15.00")),
+                "BOOM_PUMP", new PumpingMethodConfig(new BigDecimal("650.00"), new BigDecimal("25.00"))
+            );
+        }
+        return pumpingMethods;
+    }
+    public void setPumpingMethods(Map<String, PumpingMethodConfig> pumpingMethods) { this.pumpingMethods = pumpingMethods; }
+
+    public Integer getLongDistanceHaulThresholdFeet() {
+        return longDistanceHaulThresholdFeet != null ? longDistanceHaulThresholdFeet : 100;
+    }
+    public void setLongDistanceHaulThresholdFeet(Integer longDistanceHaulThresholdFeet) { this.longDistanceHaulThresholdFeet = longDistanceHaulThresholdFeet; }
+
+    public BigDecimal getLongDistanceHaulFeePerSqFt() {
+        return longDistanceHaulFeePerSqFt != null ? longDistanceHaulFeePerSqFt : new BigDecimal("0.25");
+    }
+    public void setLongDistanceHaulFeePerSqFt(BigDecimal longDistanceHaulFeePerSqFt) { this.longDistanceHaulFeePerSqFt = longDistanceHaulFeePerSqFt; }
 
     public List<LoanOption> getLoanOptions() { return loanOptions; }
     public void setLoanOptions(List<LoanOption> loanOptions) { this.loanOptions = loanOptions; }
